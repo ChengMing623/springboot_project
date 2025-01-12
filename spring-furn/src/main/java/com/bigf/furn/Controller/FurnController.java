@@ -1,9 +1,13 @@
 package com.bigf.furn.Controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bigf.furn.bean.Furn;
 import com.bigf.furn.service.FurnService;
 import com.bigf.furn.util.Result;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -53,4 +57,35 @@ public class FurnController {
         furnService.removeById(id);
         return Result.success();
     }
+
+    @GetMapping("/furnsByPage")
+    public Result listFurnByPage(@RequestParam(defaultValue = "1") Integer pageNum,
+                                 @RequestParam(defaultValue = "5") Integer pageSize) {
+        Page<Furn> page = furnService.page(new Page<>(pageNum, pageSize));
+        return Result.success(page);
+    }
+    /**
+     * 根据条件（name）进行查询
+     *
+     * @param pageNum  第几页 默认1
+     * @param pageSize 页的大小 默认5
+     * @param search   查询条件 默认为空即不带条件
+     * @return
+     */
+    @GetMapping("/furnsByCondition")
+    public Result listFurnsByConditionPage(@RequestParam(defaultValue = "1") Integer pageNum,
+                                           @RequestParam(defaultValue = "5") Integer pageSize,
+                                           @RequestParam(defaultValue = "") String search) {
+        // 获取QueryWrapper对象
+        QueryWrapper<Furn> query = Wrappers.query();
+        if (StringUtils.hasText(search)) {
+            //查询条件是name like。。。
+            query.like("name", "%" + search + "%");
+        }
+
+        //返回page对象
+        Page<Furn> page = furnService.page(new Page<>(pageNum, pageSize), query);
+        return Result.success(page);
+    }
+
 }
